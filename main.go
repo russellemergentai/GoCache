@@ -40,7 +40,19 @@ func main() {
   myPackage.Hello()
 	go calculate()
 
+// return err from go routine channel 
   r := <- results 
   fmt.Println(r.res) 
   fmt.Println(r.err)
+
+// conditional if
+  if err:=myPackage.ThrowStuff(); err != nil {
+    fmt.Println(err)
+  }
+
+  // conditional errors.is
+if err:=myPackage.ThrowStuff(); errors.Is(err, myPackage.BIGERROR) {
+    fmt.Println(err)
+  }
+  
 }
