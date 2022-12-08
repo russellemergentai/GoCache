@@ -36,9 +36,23 @@ func calculate() {
   results <- Result{output, ErrMonteCarlo}
 }
 
+// different arguments 
+func add(x, y int) int {
+  return x+y
+}
+
+func add2(x int, y int) int {
+  return x+y
+}
+
+
 func main() {
   myPackage.Hello()
 	go calculate()
+
+  // argument declaration 
+  fmt.Println(add(1,2))
+  fmt.Println(add2(1,2))
 
 // return err from go routine channel 
   r := <- results 
