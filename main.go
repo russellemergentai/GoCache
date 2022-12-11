@@ -2,71 +2,35 @@ package main
 
 import (
 	"fmt"
-	"math"
-	"math/rand"
-  "errors"
-  myPackage "main/myPackage"
+	// myPackage "main/myPackage"
 )
 
-var ErrMonteCarlo = errors.New("calc failure")
+// func SumIntsOrFloats[K comparable, V float64](m map[K]V) V {
+//     var s V
+//     for _, v := range m {
+//         s += v
+//     }
+//     return s
+// }
 
-type Result struct {
-  res float64
-  err error
+func SumFloats(m map[string]float64) float64 {
+    var s float64
+    for _, v := range m {
+        s += v
+    }
+    return s
 }
 
-var results = make(chan Result, 1)
-
-func calculate() {
-	acc := 0
-	n := 10000000
-
-	for i := 0; i < n; i++ {
-		var x = rand.Float64()
-		var y = rand.Float64()
-		xx := math.Pow(x, 2)
-		yy := math.Pow(y, 2)
-		r := (xx + yy)
-		if r < 1.0 {
-			acc++
-		}
-	}
-
-	output := float64(acc) * 4 / float64(n)
-  results <- Result{output, ErrMonteCarlo}
-}
-
-// different arguments 
-func add(x, y int) int {
-  return x+y
-}
-
-func add2(x int, y int) int {
-  return x+y
-}
-
-
+      
 func main() {
-  myPackage.Hello()
-	go calculate()
 
-  // argument declaration 
-  fmt.Println(add(1,2))
-  fmt.Println(add2(1,2))
+floats := map[string]float64{
+        "first":  35.98,
+        "second": 26.99,
+    }
 
-// return err from go routine channel 
-  r := <- results 
-  fmt.Println(r.res) 
-  fmt.Println(r.err)
-
-// conditional if
-  if err:=myPackage.ThrowStuff(); err != nil {
-    fmt.Println(err)
-  }
-
-  // conditional errors.is
-if err:=myPackage.ThrowStuff(); errors.Is(err, myPackage.BIGERROR) {
-    fmt.Println(err)
-  }
+  acc := SumFloats(floats) 
+  
+fmt.Printf("%f", acc)
   
 }
