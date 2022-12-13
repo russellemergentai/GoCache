@@ -5,32 +5,42 @@ import (
 	// myPackage "main/myPackage"
 )
 
-// func SumIntsOrFloats[K comparable, V float64](m map[K]V) V {
-//     var s V
-//     for _, v := range m {
-//         s += v
-//     }
-//     return s
-// }
-
-func SumFloats(m map[string]float64) float64 {
-    var s float64
-    for _, v := range m {
-        s += v
-    }
-    return s
+type Human interface {
+  hobby() string
 }
 
+type Man struct {
+  name string
+}
+
+type Woman struct {
+  name string
+}
+
+// implement the interface fir each struct
+func (m Man) hobby () string {
+ return m.name
+}
+
+func (m Woman) hobby () string {
+  return m.name
+}
       
 func main() {
+  m := new (Man)
+  m.name = "chad"
+  w := new (Woman)
+  w.name = "karen"
 
-floats := map[string]float64{
-        "first":  35.98,
-        "second": 26.99,
-    }
+  fmt.Println(m.hobby())
+  fmt.Println(w.hobby())
 
-  acc := SumFloats(floats) 
-  
-fmt.Printf("%f", acc)
-  
+  // do polymorphism via interface
+
+  people := []Human{m, w}
+
+  for _, item := range people {
+    fmt.Printf("%s \n", item.hobby())
+  }
+
 }
