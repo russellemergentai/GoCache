@@ -59,7 +59,7 @@ func writeEncrypt() {
 	defer file.Close()
 
 	for key, value := range data {
-		v := fmt.Sprintf("%s#%s", key, value)
+		v := fmt.Sprintf("%s#%s\n", key, value)
 		file.WriteString(v)
 	}
 }
@@ -68,15 +68,14 @@ func readDecrypt() {
 	v, _ := ioutil.ReadFile("data.txt")
 	z := string(v)
 	w := strings.Split(z, "\n")
-	fmt.Println(len(z))
 
 	for _, x := range w {
-		// y := strings.Split(x, "#")
-		// k := y[0]
-		// v := y[1]
-		fmt.Println(x)
-	}
-	// display()
+	  y := strings.Split(x, "#")
+    if (len(y) ==2) {
+		   k := y[0]
+	     v := y[1]
+       fmt.Println(k+v)}
+    }
 }
 
 func EncryptAES(key []byte, plaintext string) string {
