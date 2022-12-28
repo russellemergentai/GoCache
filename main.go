@@ -29,6 +29,7 @@ func main() {
 	writeEncrypt()
 	erase()
 	readDecrypt()
+  display()
 }
 
 func insert(key, value string) {
@@ -43,8 +44,8 @@ func deleteByKey(key string) {
 }
 
 func display() {
-	for _, name := range data {
-		fmt.Println(name)
+	for key, name := range data {
+		fmt.Println(key + " " + name)
 	}
 }
 
@@ -74,7 +75,8 @@ func readDecrypt() {
     if (len(y) ==2) {
 		   k := y[0]
 	     v := y[1]
-       fmt.Println(k+v)}
+       insert(k, v)
+      }
     }
 }
 
