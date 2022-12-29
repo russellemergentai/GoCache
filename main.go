@@ -23,9 +23,9 @@ var keyStr = hex.EncodeToString(enckey)
 var on = true
 
 func main() {
-	insert("key111", "value1111")
-	insert("key222", "value2222")
-	insert("key333", "value3333")
+	insert("key1", "value1111")
+	insert("key2", "value2222")
+	insert("key3", "value3333")
 	writeEncrypt()
 	erase()
 	readDecrypt()
