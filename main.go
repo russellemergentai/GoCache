@@ -14,19 +14,12 @@ var data = make(map[string]string)
 
 var cipher = "thisis32bitlongpassphraseimusing"
 
+var on = false
+
 func main() {
-
-	// key := "keyyyy1"
-  // value := "valueyyyy1"
-  // v := fmt.Sprintf("%s # %s \n", key, value)
-    // w := EncryptAES([]byte(cipher), v)
-	  // fmt.Println(w)
-
-	// DecryptAES([]byte(key), c)
-	// fmt.Println(c)
-
-	insert("key1111", "value1111")
-	insert("key2222", "value2222")
+	insert("key111", "value1111")
+	insert("key222", "value2222")
+  insert("key333", "value3333")
 	 writeEncrypt()
 	 erase()
 	 readDecrypt()
@@ -45,6 +38,7 @@ func deleteByKey(key string) {
 }
 
 func display() {
+  fmt.Println("display cache: ")
 	for key, name := range data {
 		fmt.Println(key + " " + name)
 	}
@@ -59,23 +53,36 @@ func erase() {
 func writeEncrypt() {
 	file, _ := os.Create("data.txt")
 	defer file.Close()
-
 	for key, value := range data {
-    v := fmt.Sprintf("%s # %s \n", key, value)
-     w := EncryptAES([]byte(cipher), v)
-		file.WriteString(w)
+     agg := fmt.Sprintf("%s#%s|", key, value)
+    fmt.Println("encrypting: " + agg)
+    var w string
+if (on) {
+      w = EncryptAES([]byte(cipher), agg)
+                } else {
+      w = agg
+    }
+
+  	file.WriteString(w)
 	}
 }
 
 func readDecrypt() {
 	v, _ := ioutil.ReadFile("data.txt")
 	z := string(v)
-  zz := DecryptAES([]byte(cipher), z)
-	w := strings.Split(zz, "\n")
-
+  fmt.Println("recovered from file: " + z)
+  var zz string
+if (on) {
+  zz = DecryptAES([]byte(cipher), z)
+  } else {
+  zz =z
+  }
+  fmt.Println("decrypted: " + zz)
+	w := strings.Split(zz, "|")
+  fmt.Println(len(w))
 	for _, x := range w {
 	  y := strings.Split(x, "#")
-    if (len(y) ==2) {
+    if (len(y) == 2) {
 		   k := y[0]
 	     v := y[1]
        insert(k, v)
@@ -89,7 +96,6 @@ func EncryptAES(key []byte, plaintext string) string {
 	CheckError(err)
 
 	out := make([]byte, len(plaintext))
-
 	c.Encrypt(out, []byte(plaintext))
 
 	return hex.EncodeToString(out)
