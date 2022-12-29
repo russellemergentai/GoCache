@@ -2,8 +2,12 @@ package main
 
 import (
 	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -12,7 +16,9 @@ import (
 // cache map
 var data = make(map[string]string)
 
-var cipher = "thisis32bitlongpassphraseimusing"
+var enckey = []byte("this's secret key.enough 32 bits")
+
+var keyStr = hex.EncodeToString(enckey)
 
 var on = true
 
@@ -24,11 +30,12 @@ func main() {
 	erase()
 	readDecrypt()
 	display()
+
 }
 
 func insert(key, value string) {
-  s := fmt.Sprintf("inserting %s, %s", key, value)
-fmt.Println(s)
+	s := fmt.Sprintf("inserting %s, %s", key, value)
+	fmt.Println(s)
 	data[key] = value
 }
 
@@ -47,7 +54,7 @@ func display() {
 }
 
 func erase() {
-  fmt.Println("erasing...")
+	fmt.Println("erasing...")
 	for k := range data {
 		delete(data, k)
 	}
@@ -56,18 +63,19 @@ func erase() {
 func writeEncrypt() {
 	file, _ := os.Create("data.txt")
 	defer file.Close()
+	agg := ""
 	for key, value := range data {
-		agg := fmt.Sprintf("%s#%s|", key, value)
-		fmt.Println("encrypting: " + agg)
-		var w string
-		if on {
-			w = EncryptAES([]byte(cipher), agg)
-		} else {
-			w = agg
-		}
-
-		file.WriteString(w)
+		agg += fmt.Sprintf("%s#%s|", key, value)
 	}
+	fmt.Println("encrypting: " + agg)
+	var w string
+	if on {
+		w = encrypt(keyStr, agg)
+	} else {
+		w = agg
+	}
+
+	file.WriteString(w)
 }
 
 func readDecrypt() {
@@ -76,7 +84,7 @@ func readDecrypt() {
 	fmt.Println("recovered from file: " + z)
 	var zz string
 	if on {
-		zz = DecryptAES([]byte(cipher), z)
+		zz = decrypt(keyStr, z)
 	} else {
 		zz = z
 	}
@@ -93,31 +101,60 @@ func readDecrypt() {
 	}
 }
 
-func EncryptAES(key []byte, plaintext string) string {
-
-	c, err := aes.NewCipher(key)
-	CheckError(err)
-
-	out := make([]byte, len(plaintext))
-	c.Encrypt(out, []byte(plaintext))
-
-	return hex.EncodeToString(out)
-}
-
-func DecryptAES(key []byte, ct string) string {
-	ciphertext, _ := hex.DecodeString(ct)
-
-	c, err := aes.NewCipher(key)
-	CheckError(err)
-
-	pt := make([]byte, len(ciphertext))
-	c.Decrypt(pt, ciphertext)
-
-	return string(pt[:])
-}
-
 func CheckError(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func encrypt(keyString string, stringToEncrypt string) (encryptedString string) {
+	// convert key to bytes
+	key, _ := hex.DecodeString(keyString)
+	plaintext := []byte(stringToEncrypt)
+
+	//Create a new Cipher Block from the key
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// The IV needs to be unique, but not secure. Therefore it's common to
+	// include it at the beginning of the ciphertext.
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		panic(err)
+	}
+
+	stream := cipher.NewCFBEncrypter(block, iv)
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+
+	// convert to base64
+	return base64.URLEncoding.EncodeToString(ciphertext)
+}
+
+// decrypt from base64 to decrypted string
+func decrypt(keyString string, stringToDecrypt string) string {
+	key, _ := hex.DecodeString(keyString)
+	ciphertext, _ := base64.URLEncoding.DecodeString(stringToDecrypt)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err)
+	}
+
+	// The IV needs to be unique, but not secure. Therefore it's common to
+	// include it at the beginning of the ciphertext.
+	if len(ciphertext) < aes.BlockSize {
+		panic("ciphertext too short")
+	}
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	stream := cipher.NewCFBDecrypter(block, iv)
+
+	// XORKeyStream can work in-place if the two arguments are the same.
+	stream.XORKeyStream(ciphertext, ciphertext)
+
+	return fmt.Sprintf("%s", ciphertext)
 }
