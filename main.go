@@ -14,19 +14,21 @@ var data = make(map[string]string)
 
 var cipher = "thisis32bitlongpassphraseimusing"
 
-var on = false
+var on = true
 
 func main() {
 	insert("key111", "value1111")
 	insert("key222", "value2222")
-  insert("key333", "value3333")
-	 writeEncrypt()
-	 erase()
-	 readDecrypt()
-   display()
+	insert("key333", "value3333")
+	writeEncrypt()
+	erase()
+	readDecrypt()
+	display()
 }
 
 func insert(key, value string) {
+  s := fmt.Sprintf("inserting %s, %s", key, value)
+fmt.Println(s)
 	data[key] = value
 }
 
@@ -38,13 +40,14 @@ func deleteByKey(key string) {
 }
 
 func display() {
-  fmt.Println("display cache: ")
+	fmt.Println("display cache: ")
 	for key, name := range data {
 		fmt.Println(key + " " + name)
 	}
 }
 
 func erase() {
+  fmt.Println("erasing...")
 	for k := range data {
 		delete(data, k)
 	}
@@ -54,40 +57,40 @@ func writeEncrypt() {
 	file, _ := os.Create("data.txt")
 	defer file.Close()
 	for key, value := range data {
-     agg := fmt.Sprintf("%s#%s|", key, value)
-    fmt.Println("encrypting: " + agg)
-    var w string
-if (on) {
-      w = EncryptAES([]byte(cipher), agg)
-                } else {
-      w = agg
-    }
+		agg := fmt.Sprintf("%s#%s|", key, value)
+		fmt.Println("encrypting: " + agg)
+		var w string
+		if on {
+			w = EncryptAES([]byte(cipher), agg)
+		} else {
+			w = agg
+		}
 
-  	file.WriteString(w)
+		file.WriteString(w)
 	}
 }
 
 func readDecrypt() {
 	v, _ := ioutil.ReadFile("data.txt")
 	z := string(v)
-  fmt.Println("recovered from file: " + z)
-  var zz string
-if (on) {
-  zz = DecryptAES([]byte(cipher), z)
-  } else {
-  zz =z
-  }
-  fmt.Println("decrypted: " + zz)
+	fmt.Println("recovered from file: " + z)
+	var zz string
+	if on {
+		zz = DecryptAES([]byte(cipher), z)
+	} else {
+		zz = z
+	}
+	fmt.Println("decrypted: " + zz)
 	w := strings.Split(zz, "|")
-  fmt.Println(len(w))
+	fmt.Println("reloading...")
 	for _, x := range w {
-	  y := strings.Split(x, "#")
-    if (len(y) == 2) {
-		   k := y[0]
-	     v := y[1]
-       insert(k, v)
-      }
-    }
+		y := strings.Split(x, "#")
+		if len(y) == 2 {
+			k := y[0]
+			v := y[1]
+			insert(k, v)
+		}
+	}
 }
 
 func EncryptAES(key []byte, plaintext string) string {
@@ -110,7 +113,7 @@ func DecryptAES(key []byte, ct string) string {
 	pt := make([]byte, len(ciphertext))
 	c.Decrypt(pt, ciphertext)
 
-  return string(pt[:])
+	return string(pt[:])
 }
 
 func CheckError(err error) {
