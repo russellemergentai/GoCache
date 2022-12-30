@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 )
@@ -19,10 +20,15 @@ var data = make(map[string]string)
 var enckey = []byte("this's secret key.enough 32 bits")
 
 var keyStr = hex.EncodeToString(enckey)
-
-var on = true
+var encryptCache = true
+var logToFile = false
 
 func main() {
+	if logToFile {
+		file, _ := os.OpenFile("log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		log.SetOutput(file)
+	}
+
 	insert("key1", "value1111")
 	insert("key2", "value2222")
 	insert("key3", "value3333")
@@ -35,7 +41,7 @@ func main() {
 
 func insert(key, value string) {
 	s := fmt.Sprintf("inserting %s, %s", key, value)
-	fmt.Println(s)
+	log.Println(s)
 	data[key] = value
 }
 
@@ -47,14 +53,14 @@ func deleteByKey(key string) {
 }
 
 func display() {
-	fmt.Println("display cache: ")
+	log.Println("display cache: ")
 	for key, name := range data {
-		fmt.Println(key + " " + name)
+		log.Println(key + " " + name)
 	}
 }
 
 func erase() {
-	fmt.Println("erasing...")
+	log.Println("erasing...")
 	for k := range data {
 		delete(data, k)
 	}
@@ -67,9 +73,9 @@ func writeEncrypt() {
 	for key, value := range data {
 		agg += fmt.Sprintf("%s#%s|", key, value)
 	}
-	fmt.Println("encrypting: " + agg)
+	log.Println("encrypting: " + agg)
 	var w string
-	if on {
+	if encryptCache {
 		w = encrypt(keyStr, agg)
 	} else {
 		w = agg
@@ -81,16 +87,16 @@ func writeEncrypt() {
 func readDecrypt() {
 	v, _ := ioutil.ReadFile("data.txt")
 	z := string(v)
-	fmt.Println("recovered from file: " + z)
+	log.Println("recovered from file: " + z)
 	var zz string
-	if on {
+	if encryptCache {
 		zz = decrypt(keyStr, z)
 	} else {
 		zz = z
 	}
-	fmt.Println("decrypted: " + zz)
+	log.Println("decrypted: " + zz)
 	w := strings.Split(zz, "|")
-	fmt.Println("reloading...")
+	log.Println("reloading...")
 	for _, x := range w {
 		y := strings.Split(x, "#")
 		if len(y) == 2 {
@@ -98,12 +104,6 @@ func readDecrypt() {
 			v := y[1]
 			insert(k, v)
 		}
-	}
-}
-
-func CheckError(err error) {
-	if err != nil {
-		panic(err)
 	}
 }
 
@@ -118,8 +118,6 @@ func encrypt(keyString string, stringToEncrypt string) (encryptedString string) 
 		panic(err.Error())
 	}
 
-	// The IV needs to be unique, but not secure. Therefore it's common to
-	// include it at the beginning of the ciphertext.
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
@@ -143,8 +141,6 @@ func decrypt(keyString string, stringToDecrypt string) string {
 		panic(err)
 	}
 
-	// The IV needs to be unique, but not secure. Therefore it's common to
-	// include it at the beginning of the ciphertext.
 	if len(ciphertext) < aes.BlockSize {
 		panic("ciphertext too short")
 	}
