@@ -24,18 +24,23 @@ var encryptCache = true
 var logToFile = false
 
 func main() {
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("panic ojccurred:", err)
+		}
+	}()
+
 	if logToFile {
 		file, _ := os.OpenFile("log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		log.SetOutput(file)
 	}
-
 	insert("key1", "value1111")
 	insert("key2", "value2222")
 	insert("key3", "value3333")
 	writeEncrypt()
 	erase()
 	readDecrypt()
-	display()
 
 }
 
