@@ -24,7 +24,7 @@ var encryptCache = true
 var logToFile = false
 
 func main() {
-// recover traps panics, defer catches them at the tail end of the program 
+	// recover traps panics, defer catches them at the tail end of the program
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("panic ojccurred:", err)
