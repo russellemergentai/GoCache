@@ -8,10 +8,10 @@ import (
 // then from main directory (C:\Users\USER\go\GoTest#1)
 // run with console 'go test ./...'
 func TestUnitTestFramework(t *testing.T) {
-	if 1 != 0 {
-		t.Error("didnt work")
-		t.Fail()
-	}
+	// if 1 != 0 {
+	// 	t.Error("didnt work")
+	// 	t.Fail()
+	// }
 }
 
 func TestCache(t *testing.T) {

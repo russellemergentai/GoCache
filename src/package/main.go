@@ -14,6 +14,9 @@ import (
 	"strings"
 )
 
+// run this with:
+// 'go run src/package/main.go'
+
 // cache map
 var data = make(map[string]string)
 
@@ -24,24 +27,27 @@ var encryptCache = true
 var logToFile = false
 
 func main() {
-	// recover traps panics, defer catches them at the tail end of the program
+	// recover traps panics and errors, defer catches them at the tail end of the program when a panic terminates
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("panic ojccurred:", err)
 		}
 	}()
 
+  // log to file
 	if logToFile {
 		file, _ := os.OpenFile("log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		log.SetOutput(file)
 	}
+
+  // insert some data, write encrypted
+  // then erase and reload
 	insert("key1", "value1111")
 	insert("key2", "value2222")
 	insert("key3", "value3333")
 	writeEncrypt()
 	erase()
 	readDecrypt()
-
 }
 
 func insert(key, value string) {
@@ -71,6 +77,7 @@ func erase() {
 	}
 }
 
+// AES encryption (Advanced encryption standard )
 func writeEncrypt() {
 	file, _ := os.Create("data.txt")
 	defer file.Close()
